@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý người dùng — Search · Sort · Phân trang</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --border: #e6e8f0;
+      --text: #1a1d29;
+      --text-muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-soft: #eef0ff;
+      --success: #0f9d58;
+      --success-soft: #e7f7ee;
+      --danger: #d93025;
+      --danger-soft: #fdeceb;
+      --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 8px 24px -12px rgba(16, 24, 40, .18);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 24px 64px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* ---------- Header ---------- */
+    header.page-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 650;
+      letter-spacing: -.02em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .endpoint {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid #dfe2ff;
+      border-radius: 8px;
+      padding: 6px 10px;
+      white-space: nowrap;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* ---------- Toolbar ---------- */
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) 150px 150px 120px auto auto;
+      gap: 10px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .field {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .field .icon {
+      position: absolute;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    input[type="search"],
+    select,
+    button {
+      font: inherit;
+      color: inherit;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+      outline: none;
+    }
+
+    input[type="search"]::placeholder {
+      color: #9aa1af;
+    }
+
+    select {
+      width: 100%;
+      padding: 9px 30px 9px 12px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    input:focus,
+    select:focus,
+    button:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, .14);
+      outline: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-weight: 550;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      background: #fff;
+    }
+
+    .btn-ghost:hover {
+      background: #f9fafb;
+      border-color: #d5d8e3;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+      border-color: #4338ca;
+    }
+
+    .btn[disabled] {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .sort-dir {
+      padding: 9px 10px;
+    }
+
+    /* ---------- Meta line ---------- */
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fcfcfe;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .meta strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: var(--accent-soft);
+      color: #4338ca;
+      border: 1px solid #dfe2ff;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 11.5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    /* ---------- Table ---------- */
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-muted);
+      background: #fbfbfd;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    thead th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th.sortable:hover {
+      color: var(--accent);
+    }
+
+    thead th .arrow {
+      opacity: 0;
+      margin-left: 4px;
+    }
+
+    thead th.active {
+      color: var(--accent);
+    }
+
+    thead th.active .arrow {
+      opacity: 1;
+    }
+
+    tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #f1f2f7;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #fafbff;
+    }
+
+    .cell-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12.5px;
+      font-weight: 650;
+      color: #3730a3;
+      background: linear-gradient(135deg, #e8eaff, #dcd8ff);
+      text-transform: uppercase;
+    }
+
+    .name {
+      font-weight: 550;
+    }
+
+    .email-mobile {
+      display: none;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 550;
+      white-space: nowrap;
+    }
+
+    .badge-admin {
+      background: var(--accent-soft);
+      color: #4338ca;
+    }
+
+    .badge-user {
+      background: #f2f3f8;
+      color: #4b5563;
+    }
+
+    .badge-active {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .badge-inactive {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ---------- States ---------- */
+    .state {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .state svg {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 12px;
+      color: #c3c8d6;
+    }
+
+    .state h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .state p {
+      margin: 0 0 16px;
+      font-size: 13px;
+    }
+
+    .state.error {
+      color: var(--danger);
+    }
+
+    .state.error h3 {
+      color: var(--danger);
+    }
+
+    .state.error svg {
+      color: var(--danger);
+    }
+
+    .skeleton {
+      height: 13px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #eef0f6 25%, #f7f8fc 50%, #eef0f6 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* ---------- Pagination ---------- */
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      background: #fcfcfe;
+    }
+
+    .pager-info {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .pages {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .page-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 9px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 550;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+    }
+
+    .page-btn:hover:not(:disabled):not(.active) {
+      background: #f5f6fb;
+      border-color: #d5d8e3;
+    }
+
+    .page-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .page-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .ellipsis {
+      padding: 0 4px;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    /* ---------- JSON peek ---------- */
+    .json-toggle {
+      border: none;
+      background: none;
+      color: var(--accent);
+      font: inherit;
+      font-size: 12.5px;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    pre.json {
+      display: none;
+      margin: 0;
+      padding: 16px;
+      max-height: 320px;
+      overflow: auto;
+      background: #12141c;
+      color: #d7dae7;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    pre.json.show {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 24px 14px 48px;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .toolbar>.field-search {
+        grid-column: 1 / -1;
+      }
+
+      .toolbar>.btn-primary {
+        grid-column: 1 / -1;
+      }
+
+      thead th:nth-child(3),
+      tbody td:nth-child(3) {
+        display: none;
+      }
+
+      .email-mobile {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <header class="page-head">
+      <div>
+        <h1>Quản lý người dùng</h1>
+        <p class="subtitle">Tìm kiếm · Sắp xếp · Phân trang phía server (ASP.NET Core + EF Core)</p>
+      </div>
+      <span class="endpoint" id="endpointLabel">GET /api/users</span>
+    </header>
+
+    <section class="panel">
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="field field-search">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <input id="search" type="search" placeholder="Tìm theo họ tên hoặc email..." autocomplete="off" />
+        </div>
+
+        <select id="role" title="Lọc theo vai trò">
+          <option value="">Tất cả vai trò</option>
+          <option value="Admin">Admin</option>
+          <option value="User">User</option>
+        </select>
+
+        <select id="sortBy" title="Sắp xếp theo">
+          <option value="fullname">Họ tên</option>
+          <option value="email">Email</option>
+          <option value="createdat">Ngày tạo</option>
+        </select>
+
+        <select id="pageSize" title="Số dòng mỗi trang">
+          <option value="5">5 / trang</option>
+          <option value="10" selected>10 / trang</option>
+          <option value="20">20 / trang</option>
+          <option value="50">50 / trang</option>
+        </select>
+
+        <button id="sortDir" class="btn btn-ghost sort-dir" title="Đảo chiều sắp xếp">
+          <span id="sortDirIcon">↑</span>
+          <span id="sortDirText">Tăng</span>
+        </button>
+
+        <button id="reset" class="btn btn-ghost" title="Xóa bộ lọc">Đặt lại</button>
+      </div>
+
+      <!-- META -->
+      <div class="meta">
+        <div id="metaText">Đang tải…</div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="fullname">Người dùng <span class="arrow">↑</span></th>
+              <th class="sortable" data-sort="email">Email <span class="arrow">↑</span></th>
+              <th>Vai trò</th>
+              <th>Trạng thái</th>
+              <th class="sortable" data-sort="createdat">Ngày tạo <span class="arrow">↑</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- PAGER -->
+      <div class="pager">
+        <div class="pager-info" id="pagerInfo">—</div>
+        <div class="pages" id="pages"></div>
+      </div>
+
+      <!-- JSON PEEK -->
+      <div style="padding: 10px 16px; border-top: 1px solid var(--border); background: #fcfcfe;">
+        <button class="json-toggle" id="jsonToggle">Xem JSON trả về</button>
+      </div>
+      <pre class="json" id="jsonOut"></pre>
+
+    </section>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ====== CẤU HÌNH ======
+      // Nếu mở file trực tiếp bằng file:// (double-click) thì phải trỏ tuyệt đối về server.
+      // Nếu chạy qua http://localhost:5121/users.html thì dùng đường dẫn tương đối.
+      const API_BASE = (location.protocol === 'file:')
+        ? 'http://localhost:5121'
+        : '';
+      const API = API_BASE + '/api/users';
+
+      // ====== STATE ======
+      const state = {
+        pageNumber: 1,
+        pageSize: 10,
+        searchTerm: '',
+        role: '',
+        sortBy: 'fullname',
+        isDescending: false,
+        loading: false,
+        data: null,
+        error: null,
+        lastUrl: ''
+      };
+
+      // ====== DOM ======
+      const $ = (id) => document.getElementById(id);
+      const elSearch = $('search');
+      const elRole = $('role');
+      const elSortBy = $('sortBy');
+      const elPageSize = $('pageSize');
+      const elSortDir = $('sortDir');
+      const elSortDirIcon = $('sortDirIcon');
+      const elSortDirText = $('sortDirText');
+      const elReset = $('reset');
+      const elMetaText = $('metaText');
+      const elChips = $('chips');
+      const elTbody = $('tbody');
+      const elPagerInfo = $('pagerInfo');
+      const elPages = $('pages');
+      const elEndpoint = $('endpointLabel');
+      const elJsonToggle = $('jsonToggle');
+      const elJsonOut = $('jsonOut');
+
+      // ====== HELPERS ======
+      // Bảng escape dựng từ char code để tránh bị HTML parser "nuốt" entity
+      const ESC_MAP = {
+        '&': '&' + 'amp;',
+        '<': '&' + 'lt;',
+        '>': '&' + 'gt;',
+        '"': '&' + 'quot;',
+        "'": '&' + '#39;'
+      };
+      const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (ch) => ESC_MAP[ch]);
+
+      const initials = (name) => {
+        const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return '?';
+        if (parts.length === 1) return parts[0].slice(0, 2);
+        return (parts[0][0] + parts[parts.length - 1][0]);
+      };
+
+      const formatDate = (iso) => {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleString('vi-VN', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+      };
+
+      const debounce = (fn, wait) => {
+        let t;
+        return function (...args) {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(this, args), wait);
+        };
+      };
+
+      // ====== BUILD URL ======
+      function buildUrl() {
+        const p = new URLSearchParams();
+        p.set('pageNumber', state.pageNumber);
+        p.set('pageSize', state.pageSize);
+        if (state.searchTerm) p.set('searchTerm', state.searchTerm);
+        if (state.role) p.set('role', state.role);
+        if (state.sortBy) p.set('sortBy', state.sortBy);
+        p.set('isDescending', state.isDescending);
+        return `${API}?${p.toString()}`;
+      }
+
+      // ====== FETCH ======
+      let controller = null;
+
+      async function load() {
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        state.loading = true;
+        state.error = null;
+        state.lastUrl = buildUrl();
+        elEndpoint.textContent = 'GET ' + state.lastUrl;
+
+        renderSkeleton();
+
+        try {
+          const res = await fetch(state.lastUrl, {
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal
+          });
+
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status} ${res.statusText}${text ? ' — ' + text.slice(0, 300) : ''}`);
+          }
+
+          const json = await res.json();
+          state.data = json;
+          state.loading = false;
+
+          // Nếu trang hiện tại vượt quá tổng số trang (vd: sau khi xóa/lọc) -> lùi về trang cuối
+          if (json.totalPages > 0 && state.pageNumber > json.totalPages) {
+            state.pageNumber = json.totalPages;
+            return load();
+          }
+
+          render();
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+          state.loading = false;
+          state.error = err.message || String(err);
+          renderError();
+        }
+      }
+
+      // ====== RENDER: SKELETON ======
+      function renderSkeleton() {
+        elMetaText.textContent = 'Đang tải dữ liệu…';
+        elChips.innerHTML = '';
+        elPagerInfo.textContent = '—';
+        elPages.innerHTML = '';
+
+        let rows = '';
+        for (let i = 0; i < Math.min(state.pageSize, 8); i++) {
+          rows += `<tr>
+            <td><div class="cell-name">
+              <div class="avatar" style="background:#f1f2f7"></div>
+              <div style="flex:1"><div class="skeleton" style="width:${60 + (i % 4) * 12}%"></div></div>
+            </div></td>
+            <td><div class="skeleton" style="width:${70 + (i % 3) * 10}%"></div></td>
+            <td><div class="skeleton" style="width:52px"></div></td>
+            <td><div class="skeleton" style="width:64px"></div></td>
+            <td><div class="skeleton" style="width:110px"></div></td>
+          </tr>`;
+        }
+        elTbody.innerHTML = rows;
+      }
+
+      // ====== RENDER: ERROR ======
+      function renderError() {
+        elMetaText.textContent = 'Không tải được dữ liệu';
+        elChips.innerHTML = '';
+        elPagerInfo.textContent = '—';
+        elPages.innerHTML = '';
+        elTbody.innerHTML = `
+          <tr><td colspan="5">
+            <div class="state error">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 8v5"></path><path d="M12 16.5v.01"></path>
+              </svg>
+              <h3>Lỗi khi gọi API</h3>
+              <p>${escapeHtml(state.error)}</p>
+              <p style="font-size:12px">Kiểm tra: server đang chạy? chuỗi kết nối SQL Server trong <code>appsettings.json</code>? đã chạy migration chưa?</p>
+              <button class="btn btn-primary" onclick="location.reload()">Thử lại</button>
+            </div>
+          </td></tr>`;
+      }
+
+      // ====== RENDER: MAIN ======
+      function render() {
+        const d = state.data || { items: [], totalCount: 0, pageNumber: 1, pageSize: state.pageSize, totalPages: 0 };
+        const items = d.items || [];
+
+        // --- Meta ---
+        const from = d.totalCount === 0 ? 0 : (d.pageNumber - 1) * d.pageSize + 1;
+        const to = Math.min(d.pageNumber * d.pageSize, d.totalCount);
+        elMetaText.innerHTML = d.totalCount === 0
+          ? 'Không có bản ghi nào'
+          : `Hiển thị <strong>${from}–${to}</strong> trong <strong>${d.totalCount}</strong> người dùng`;
+
+        // --- Chips ---
+        const chips = [];
+        if (state.searchTerm) chips.push(`searchTerm=${state.searchTerm}`);
+        if (state.role) chips.push(`role=${state.role}`);
+        chips.push(`sortBy=${state.sortBy}`);
+        chips.push(`isDescending=${state.isDescending}`);
+        chips.push(`pageSize=${state.pageSize}`);
+        elChips.innerHTML = chips.map(c => `<span class="chip">${escapeHtml(c)}</span>`).join('');
+
+        // --- Table ---
+        if (!items.length) {
+          elTbody.innerHTML = `
+            <tr><td colspan="5">
+              <div class="state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>
+                </svg>
+                <h3>Không tìm thấy người dùng</h3>
+                <p>Thử từ khóa khác hoặc bỏ bộ lọc vai trò.</p>
+                <button class="btn btn-ghost" id="clearFilters">Xóa bộ lọc</button>
+              </div>
+            </td></tr>`;
+          const btn = $('clearFilters');
+          if (btn) btn.addEventListener('click', resetFilters);
+        } else {
+          elTbody.innerHTML = items.map(u => {
+            const roleClass = (u.role || '').toLowerCase() === 'admin' ? 'badge-admin' : 'badge-user';
+            const activeClass = u.isActive ? 'badge-active' : 'badge-inactive';
+            return `<tr>
+              <td>
+                <div class="cell-name">
+                  <div class="avatar">${escapeHtml(initials(u.fullName))}</div>
+                  <div>
+                    <div class="name">${escapeHtml(u.fullName)}</div>
+                    <div class="email-mobile">${escapeHtml(u.email)}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="mono">${escapeHtml(u.email)}</td>
+              <td><span class="badge ${roleClass}">${escapeHtml(u.role || '—')}</span></td>
+              <td>
+                <span class="badge ${activeClass}">
+                  <span class="dot"></span>${u.isActive ? 'Hoạt động' : 'Đã khóa'}
+                </span>
+              </td>
+              <td class="mono">${escapeHtml(formatDate(u.createdAt))}</td>
+            </tr>`;
+          }).join('');
+        }
+
+        // --- Pager ---
+        elPagerInfo.textContent = d.totalPages > 0
+          ? `Trang ${d.pageNumber} / ${d.totalPages}`
+          : 'Trang 0 / 0';
+
+        renderPages(d);
+
+        // --- Sort header highlight ---
+        document.querySelectorAll('thead th.sortable').forEach(th => {
+          const isActive = th.dataset.sort === state.sortBy;
+          th.classList.toggle('active', isActive);
+          const arrow = th.querySelector('.arrow');
+          if (arrow) arrow.textContent = state.isDescending ? '↓' : '↑';
+        });
+
+        // --- Sort direction button ---
+        elSortDirIcon.textContent = state.isDescending ? '↓' : '↑';
+        elSortDirText.textContent = state.isDescending ? 'Giảm' : 'Tăng';
+
+        // --- JSON ---
+        elJsonOut.textContent = JSON.stringify(d, null, 2);
+      }
+
+      // ====== RENDER: PAGES ======
+      function renderPages(d) {
+        const total = d.totalPages || 0;
+        const current = d.pageNumber || 1;
+        elPages.innerHTML = '';
+
+        if (total <= 1) return;
+
+        const makeBtn = (label, page, opts = {}) => {
+          const b = document.createElement('button');
+          b.className = 'page-btn' + (opts.active ? ' active' : '');
+          b.textContent = label;
+          b.disabled = !!opts.disabled;
+          if (!opts.disabled && !opts.active) {
+            b.addEventListener('click', () => goToPage(page));
+          }
+          return b;
+        };
+
+        elPages.appendChild(makeBtn('‹', current - 1, { disabled: current <= 1 }));
+
+        const windowPages = [];
+        const push = (p) => { if (!windowPages.includes(p)) windowPages.push(p); };
+
+        push(1);
+        for (let p = current - 1; p <= current + 1; p++) {
+          if (p > 1 && p < total) push(p);
+        }
+        push(total);
+
+        windowPages.sort((a, b) => a - b);
+
+        let prev = 0;
+        for (const p of windowPages) {
+          if (prev && p - prev > 1) {
+            const span = document.createElement('span');
+            span.className = 'ellipsis';
+            span.textContent = '…';
+            elPages.appendChild(span);
+          }
+          elPages.appendChild(makeBtn(String(p), p, { active: p === current }));
+          prev = p;
+        }
+
+        elPages.appendChild(makeBtn('›', current + 1, { disabled: current >= total }));
+      }
+
+      // ====== ACTIONS ======
+      function goToPage(p) {
+        if (p < 1) return;
+        state.pageNumber = p;
+        load();
+      }
+
+      function resetFilters() {
+        state.pageNumber = 1;
+        state.searchTerm = '';
+        state.role = '';
+        state.sortBy = 'fullname';
+        state.isDescending = false;
+        state.pageSize = 10;
+
+        elSearch.value = '';
+        elRole.value = '';
+        elSortBy.value = 'fullname';
+        elPageSize.value = '10';
+
+        load();
+      }
+
+      // ====== EVENTS ======
+      elSearch.addEventListener('input', debounce(() => {
+        state.searchTerm = elSearch.value.trim();
+        state.pageNumber = 1;
+        load();
+      }, 350));
+
+      elRole.addEventListener('change', () => {
+        state.role = elRole.value;
+        state.pageNumber = 1;
+        load();
+      });
+
+      elSortBy.addEventListener('change', () => {
+        state.sortBy = elSortBy.value;
+        state.pageNumber = 1;
+        load();
+      });
+
+      elPageSize.addEventListener('change', () => {
+        state.pageSize = parseInt(elPageSize.value, 10) || 10;
+        state.pageNumber = 1;
+        load();
+      });
+
+      elSortDir.addEventListener('click', () => {
+        state.isDescending = !state.isDescending;
+        state.pageNumber = 1;
+        load();
+      });
+
+      elReset.addEventListener('click', resetFilters);
+
+      document.querySelectorAll('thead th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const field = th.dataset.sort;
+          if (state.sortBy === field) {
+            state.isDescending = !state.isDescending;
+          } else {
+            state.sortBy = field;
+            state.isDescending = false;
+          }
+          elSortBy.value = state.sortBy;
+          state.pageNumber = 1;
+          load();
+        });
+      });
+
+      elJsonToggle.addEventListener('click', () => {
+        const shown = elJsonOut.classList.toggle('show');
+        elJsonToggle.textContent = shown ? 'Ẩn JSON' : 'Xem JSON trả về';
+      });
+
+      // ====== INIT ======
+      load();
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+@MyApiApp_HostAddress = http://localhost:5121
+
+### 1. Lấy danh sách tất cả người dùng
+GET {{MyApiApp_HostAddress}}/api/users
+Accept: application/json
+
+### 2. Lấy người dùng theo Id
+GET {{MyApiApp_HostAddress}}/api/users/1
+Accept: application/json
+
+### 3. Đăng ký tài khoản mới
+POST {{MyApiApp_HostAddress}}/api/users/register
+Content-Type: application/json
+
+{
+  "fullName": "Lê Thị C",
+  "email": "lethic@gmail.com",
+  "password": "123456",
+  "role": "User"
+}
+
+### 4. Đăng nhập lấy JWT Token
+POST {{MyApiApp_HostAddress}}/api/users/login
+Content-Type: application/json
+
+{
+  "email": "ana@gmail.com",
+  "password": "123456"
+}
+
+### 5. Cập nhật thông tin người dùng
+PUT {{MyApiApp_HostAddress}}/api/users/1
+Content-Type: application/json
+
+{
+  "fullName": "Nguyễn Văn A (Updated)",
+  "role": "Admin"
+}
+
+### 6. Xóa người dùng
+DELETE {{MyApiApp_HostAddress}}/api/users/2
+
+###
